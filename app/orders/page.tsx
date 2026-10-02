@@ -31,7 +31,9 @@ export default async function OrdersPage() {
 
   return (
     <div className="pt-12">
-      <h1 className="font-serif text-3xl text-ink">Your orders</h1>
+      <h1 className="animate-[var(--animate-fade-up)] font-serif text-3xl text-ink">
+        Your orders
+      </h1>
 
       {rows.length === 0 ? (
         <p className="mt-6 rounded-2xl border border-line bg-card p-6 text-sm text-ink-soft">
@@ -45,15 +47,16 @@ export default async function OrdersPage() {
         </p>
       ) : (
         <ul className="mt-8 divide-y divide-line rounded-2xl border border-line bg-card">
-          {rows.map((order) => (
+          {rows.map((order, index) => (
             <li
               key={order.id}
-              className="flex flex-wrap items-center justify-between gap-3 p-5"
+              style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
+              className="group flex animate-[var(--animate-fade-up)] flex-wrap items-center justify-between gap-3 p-5 transition-colors duration-300 hover:bg-paper/60"
             >
               <div>
                 <Link
                   href={`/orders/${order.id}`}
-                  className="font-mono text-sm font-medium text-ink underline-offset-4 hover:underline"
+                  className="font-mono text-sm font-medium text-ink transition-colors duration-200 group-hover:text-leaf"
                 >
                   {order.orderNumber}
                 </Link>
@@ -66,7 +69,7 @@ export default async function OrdersPage() {
                   · {order.status}
                 </p>
               </div>
-              <span className="font-medium text-ink">
+              <span className="font-medium tabular-nums text-ink">
                 {formatCents(order.subtotalCents)}
               </span>
             </li>

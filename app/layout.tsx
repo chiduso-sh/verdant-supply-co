@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { CartProvider } from "@/components/cart-provider";
 import { Header } from "@/components/header";
 import "./globals.css";
@@ -16,15 +17,44 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-paper text-ink">
+      <body className="bg-paper text-ink antialiased">
         <CartProvider>
           <Header />
-          <main className="mx-auto w-full max-w-5xl px-4 pb-24 sm:px-6">
+          <main className="mx-auto w-full max-w-5xl px-4 pb-28 sm:px-6">
             {children}
           </main>
-          <footer className="border-t border-line px-4 py-8 text-center text-xs text-ink-faint sm:px-6">
-            Verdant Supply Co. — a demo build. No payment is taken and nothing
-            ships.
+
+          <footer className="border-t border-line">
+            <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-10 sm:px-6">
+              <div>
+                <p className="font-serif text-lg text-ink">
+                  Verdant Supply Co.
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-ink-faint">
+                  A demo build. No payment is taken and nothing ships.
+                </p>
+              </div>
+              <div className="flex items-center gap-5 text-sm text-ink-faint">
+                <Link
+                  href="/"
+                  className="transition-colors duration-200 hover:text-ink"
+                >
+                  Shop
+                </Link>
+                <Link
+                  href="/cart"
+                  className="transition-colors duration-200 hover:text-ink"
+                >
+                  Cart
+                </Link>
+                <Link
+                  href="/orders"
+                  className="transition-colors duration-200 hover:text-ink"
+                >
+                  Orders
+                </Link>
+              </div>
+            </div>
           </footer>
         </CartProvider>
       </body>

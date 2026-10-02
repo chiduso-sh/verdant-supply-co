@@ -26,38 +26,62 @@ export default async function ProductPage({
     <div className="pt-10">
       <Link
         href="/"
-        className="text-sm text-ink-faint underline-offset-4 transition hover:text-ink hover:underline"
+        className="group inline-flex items-center gap-1.5 text-sm text-ink-faint transition-colors duration-200 hover:text-ink"
       >
-        ← All products
+        <span
+          aria-hidden="true"
+          className="transition-transform duration-300 ease-[var(--ease-out-soft)] group-hover:-translate-x-1"
+        >
+          ←
+        </span>
+        All products
       </Link>
 
-      <div className="mt-6 grid gap-10 md:grid-cols-2">
-        <div className="relative aspect-square overflow-hidden rounded-2xl border border-line bg-card">
+      <div className="mt-6 grid gap-10 md:grid-cols-2 md:gap-14">
+        <div
+          style={{ animationDelay: "60ms" }}
+          className="group relative aspect-square animate-[var(--animate-rise)] overflow-hidden rounded-2xl border border-line bg-card"
+        >
           <Image
             src={product.imageUrl}
             alt={product.name}
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover"
+            className="object-cover transition-transform duration-[1200ms] ease-[var(--ease-out-soft)] group-hover:scale-105"
             priority
           />
         </div>
 
         <div className="flex flex-col justify-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-faint">
+          <p
+            style={{ animationDelay: "140ms" }}
+            className="animate-[var(--animate-fade-up)] text-xs font-semibold uppercase tracking-[0.14em] text-leaf"
+          >
             {product.category}
           </p>
-          <h1 className="mt-2 font-serif text-3xl leading-tight text-ink sm:text-4xl">
+          <h1
+            style={{ animationDelay: "200ms" }}
+            className="mt-3 animate-[var(--animate-fade-up)] font-serif text-4xl leading-[1.1] tracking-tight text-balance text-ink sm:text-5xl"
+          >
             {product.name}
           </h1>
-          <p className="mt-4 text-lg font-medium text-ink">
+          <p
+            style={{ animationDelay: "260ms" }}
+            className="mt-4 animate-[var(--animate-fade-up)] text-2xl font-medium tabular-nums text-ink"
+          >
             {formatCents(product.priceCents)}
           </p>
-          <p className="mt-5 leading-relaxed text-ink-soft">
+          <p
+            style={{ animationDelay: "320ms" }}
+            className="mt-5 animate-[var(--animate-fade-up)] text-lg leading-relaxed text-ink-soft"
+          >
             {product.description}
           </p>
 
-          <div className="mt-8">
+          <div
+            style={{ animationDelay: "400ms" }}
+            className="mt-8 animate-[var(--animate-fade-up)]"
+          >
             <AddToCart
               showQuantity
               product={{

@@ -65,7 +65,15 @@ export function CheckoutForm({
   }
 
   if (!hydrated) {
-    return <p className="pt-16 text-sm text-ink-faint">Loading checkout&hellip;</p>;
+    return (
+      <div className="pt-12">
+        <div className="h-9 w-40 animate-pulse rounded-lg bg-line" />
+        <div className="mt-8 grid gap-8 lg:grid-cols-[1.2fr_1fr]">
+          <div className="h-80 animate-pulse rounded-2xl bg-line/50" />
+          <div className="h-56 animate-pulse rounded-2xl bg-line/50" />
+        </div>
+      </div>
+    );
   }
 
   if (lines.length === 0) {
@@ -79,7 +87,7 @@ export function CheckoutForm({
 
   return (
     <div className="pt-12">
-      <h1 className="font-serif text-3xl text-ink">Checkout</h1>
+      <h1 className="animate-[var(--animate-fade-up)] font-serif text-3xl text-ink">Checkout</h1>
       <p className="mt-2 text-sm text-ink-faint">
         Confirmation will be emailed to{" "}
         <strong className="text-ink-soft">{userEmail}</strong>.
@@ -167,7 +175,7 @@ export function CheckoutForm({
           {error ? (
             <p
               role="alert"
-              className="mt-4 rounded-xl border border-ochre/40 bg-ochre/5 p-4 text-sm text-ochre"
+              className="mt-4 animate-[var(--animate-fade-up)] rounded-xl border border-ochre/40 bg-ochre/5 p-4 text-sm text-ochre"
             >
               {error}
             </p>
@@ -176,21 +184,40 @@ export function CheckoutForm({
           <button
             type="submit"
             disabled={pending}
-            className="mt-5 w-full rounded-full bg-leaf px-6 py-3.5 text-sm font-medium text-white transition hover:bg-leaf-dark disabled:cursor-not-allowed disabled:opacity-60"
+            className="group mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-leaf px-6 py-4 text-sm font-medium text-white shadow-[0_2px_12px_-4px_rgba(47,93,74,0.6)] transition-all duration-300 ease-[var(--ease-out-soft)] hover:-translate-y-0.5 hover:bg-leaf-dark hover:shadow-[0_14px_30px_-12px_rgba(47,93,74,0.9)] active:translate-y-0 active:scale-[0.99] disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70 disabled:shadow-none"
           >
-            {pending
-              ? "Placing order…"
-              : `Place order · ${formatCents(subtotalCents)}`}
+            {pending ? (
+              <>
+                <span
+                  aria-hidden="true"
+                  className="h-4 w-4 animate-spin rounded-full border-2 border-white/35 border-t-white"
+                />
+                Placing order&hellip;
+              </>
+            ) : (
+              <>
+                Place order
+                <span className="tabular-nums opacity-80">
+                  {formatCents(subtotalCents)}
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="transition-transform duration-300 ease-[var(--ease-out-soft)] group-hover:translate-x-1"
+                >
+                  →
+                </span>
+              </>
+            )}
           </button>
         </form>
 
-        <aside className="order-1 h-fit rounded-2xl border border-line bg-card p-5 lg:order-2">
+        <aside className="order-1 h-fit rounded-2xl border border-line bg-card p-5 lg:order-2 lg:sticky lg:top-28">
           <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-faint">
             Order summary
           </h2>
           <ul className="mt-4 divide-y divide-line">
             {lines.map((line) => (
-              <li key={line.productId} className="flex items-center gap-3 py-3">
+              <li key={line.productId} className="flex items-center gap-3 py-3 transition-colors duration-300">
                 <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-paper">
                   <Image
                     src={line.imageUrl}
@@ -246,7 +273,7 @@ function Field({
       <input
         type={type}
         required={required}
-        className="w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-ink outline-none transition focus:border-leaf focus:bg-card"
+        className="w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-ink outline-none transition-all duration-200 placeholder:text-ink-faint/60 hover:border-ink-faint/50 focus:border-leaf focus:bg-card focus:ring-2 focus:ring-leaf/15"
         {...rest}
       />
     </label>
