@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #f7f6f3;
+  --color-card: #ffffff;
+  --color-ink: #1c1b19;
+  --color-ink-soft: #4a4842;
+  --color-ink-faint: #8a8780;
+  --color-line: #e8e6e1;
+  --color-leaf: #2f5d4a;
+  --color-leaf-dark: #244839;
+  --color-ochre: #b4762b;
+
+  --font-serif: ui-serif, Georgia, "Times New Roman", serif;
+}
+
+html {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  min-height: 100dvh;
+}
