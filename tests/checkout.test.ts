@@ -85,6 +85,40 @@ describe("validateShipping", () => {
     const result = validateShipping({ ...VALID, city: "", fullName: "" });
     assert.deepEqual(result, { ok: false, error: "Full name is required." });
   });
+
+  it("rejects a country that is not one of the dropdown options", () => {
+    // The field is a <select>, so an off-list value did not come from the
+    // form and should not be persisted.
+    const result = validateShipping({ ...VALID, country: "Wakanda" });
+    assert.deepEqual(result, {
+      ok: false,
+      error: "Please choose a country from the list.",
+    });
+  });
+
+  it("rejects a country code in place of the country name", () => {
+    assert.equal(validateShipping({ ...VALID, country: "GB" }).ok, false);
+  });
+
+  it("accepts every country the dropdown offers", () => {
+    for (const country of ["Nigeria", "United States", "Canada", "Japan"]) {
+      assert.equal(
+        validateShipping({ ...VALID, country }).ok,
+        true,
+        `${country} should be accepted`,
+      );
+    }
+  });
+
+  it("does not constrain the region or city, which have incomplete data", () => {
+    const result = validateShipping({
+      ...VALID,
+      country: "France",
+      state: "Occitanie",
+      city: "Sète",
+    });
+    assert.equal(result.ok, true);
+  });
 });
 
 describe("collapseCartLines", () => {

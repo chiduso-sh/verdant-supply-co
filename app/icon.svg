@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <rect width="32" height="32" rx="7" fill="#2f5d4a" />
+  <!--
+    One bold silhouette rather than fine detail: at 16px in a browser tab,
+    anything thinner than about 2px disappears.
+  -->
+  <path
+    d="M16 5c6.2 3.6 8.6 10.4 4.8 16.3A8.4 8.4 0 0 1 16 25a8.4 8.4 0 0 1-4.8-3.7C7.4 15.4 9.8 8.6 16 5Z"
+    fill="#ffffff"
+  />
+  <path
+    d="M16 9.5v15"
+    stroke="#2f5d4a"
+    stroke-width="1.8"
+    stroke-linecap="round"
+  />
+  <path
+    d="M16 15.5 12.4 12M16 19.5l3.6-3.5"
+    stroke="#2f5d4a"
+    stroke-width="1.6"
+    stroke-linecap="round"
+  />
+</svg>

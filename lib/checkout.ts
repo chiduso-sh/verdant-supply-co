@@ -8,6 +8,7 @@
  */
 
 import { MAX_QUANTITY } from "./cart";
+import { isKnownCountry } from "./geo";
 
 export type CheckoutLine = { productId: number; quantity: number };
 
@@ -70,6 +71,14 @@ export function validateShipping(
     if (!shipping[field]?.trim()) {
       return { ok: false, error: `${label} is required.` };
     }
+  }
+
+  // The country field is a dropdown, so anything outside the list did not
+  // come from the form. Region and city stay free-form on purpose: the data
+  // in lib/geo.ts covers only some countries, so validating them would
+  // reject perfectly real addresses.
+  if (!isKnownCountry(shipping.country)) {
+    return { ok: false, error: "Please choose a country from the list." };
   }
 
   return {

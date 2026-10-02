@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { placeOrder } from "@/app/checkout/actions";
 import type { ShippingInput } from "@/lib/checkout";
+import { citiesFor, COUNTRIES, regionsFor } from "@/lib/geo";
 import { formatCents } from "@/lib/money";
 import { useCart } from "./cart-provider";
 
@@ -35,9 +36,44 @@ export function CheckoutForm({
     fullName: userName ?? "",
   });
 
+  // Only the lists we actually ship data for; empty means "use a text input".
+  const regions = regionsFor(shipping.country);
+  const cities = citiesFor(shipping.country, shipping.state);
+
   function update(field: keyof ShippingInput) {
-    return (event: React.ChangeEvent<HTMLInputElement>) =>
-      setShipping((current) => ({ ...current, [field]: event.target.value }));
+    return (
+      event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    ) => setShipping((current) => ({ ...current, [field]: event.target.value }));
+  }
+
+  // Changing a country invalidates whatever state and city were chosen under
+  // the old one, so clear them rather than leaving a mismatched address.
+  function chooseCountry(
+    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) {
+    setShipping((current) => ({
+      ...current,
+      country: event.target.value,
+      state: "",
+      city: "",
+    }));
+  }
+
+  function chooseRegion(
+    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) {
+    setShipping((current) => ({
+      ...current,
+      state: event.target.value,
+      city: "",
+    }));
+  }
+
+  // The free-text variant must not wipe the city on every keystroke.
+  function chooseRegionText(
+    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) {
+    setShipping((current) => ({ ...current, state: event.target.value }));
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -127,33 +163,62 @@ export function CheckoutForm({
                 className="sm:col-span-2"
                 autoComplete="address-line2"
               />
-              <Field
-                label="City"
+              <Select
+                label="Country"
                 required
-                value={shipping.city}
-                onChange={update("city")}
-                autoComplete="address-level2"
+                value={shipping.country}
+                onChange={chooseCountry}
+                autoComplete="country-name"
+                placeholder="Select a country"
+                options={COUNTRIES.map((country) => country.name)}
               />
-              <Field
-                label="State / region"
-                required
-                value={shipping.state}
-                onChange={update("state")}
-                autoComplete="address-level1"
-              />
+
+              {regions.length > 0 ? (
+                <Select
+                  label="State / region"
+                  required
+                  value={shipping.state}
+                  onChange={chooseRegion}
+                  autoComplete="address-level1"
+                  placeholder="Select a state"
+                  options={regions}
+                />
+              ) : (
+                <Field
+                  label="State / region"
+                  required
+                  value={shipping.state}
+                  onChange={chooseRegionText}
+                  autoComplete="address-level1"
+                />
+              )}
+
+              {cities.length > 0 ? (
+                <Select
+                  label="City"
+                  required
+                  value={shipping.city}
+                  onChange={update("city")}
+                  autoComplete="address-level2"
+                  placeholder="Select a city"
+                  options={cities}
+                />
+              ) : (
+                <Field
+                  label="City"
+                  required
+                  value={shipping.city}
+                  onChange={update("city")}
+                  autoComplete="address-level2"
+                />
+              )}
+
               <Field
                 label="Postal code"
                 required
                 value={shipping.postalCode}
                 onChange={update("postalCode")}
                 autoComplete="postal-code"
-              />
-              <Field
-                label="Country"
-                required
-                value={shipping.country}
-                onChange={update("country")}
-                autoComplete="country-name"
               />
               <Field
                 label="Phone (optional)"
@@ -261,7 +326,9 @@ function Field({
   required?: boolean;
   type?: string;
   value: string;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (
+    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => void;
   autoComplete?: string;
 }) {
   return (
@@ -276,6 +343,62 @@ function Field({
         className="w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-ink outline-none transition-all duration-200 placeholder:text-ink-faint/60 hover:border-ink-faint/50 focus:border-leaf focus:bg-card focus:ring-2 focus:ring-leaf/15"
         {...rest}
       />
+    </label>
+  );
+}
+
+
+function Select({
+  label,
+  className = "",
+  required = false,
+  options,
+  placeholder,
+  ...rest
+}: {
+  label: string;
+  className?: string;
+  required?: boolean;
+  options: string[];
+  placeholder: string;
+  value: string;
+  onChange: (
+    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => void;
+  autoComplete?: string;
+}) {
+  return (
+    <label className={`block ${className}`}>
+      <span className="mb-1.5 block text-sm text-ink-soft">
+        {label}
+        {required ? <span className="text-ochre"> *</span> : null}
+      </span>
+      <div className="relative">
+        <select
+          required={required}
+          className="w-full appearance-none rounded-xl border border-line bg-paper px-3 py-2.5 pr-9 text-ink outline-none transition-all duration-200 hover:border-ink-faint/50 focus:border-leaf focus:bg-card focus:ring-2 focus:ring-leaf/15"
+          {...rest}
+        >
+          <option value="">{placeholder}</option>
+          {options.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+          className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint"
+        >
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </div>
     </label>
   );
 }
