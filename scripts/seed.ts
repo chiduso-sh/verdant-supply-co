@@ -1,9 +1,7 @@
 import { config } from "dotenv";
 
+// Must run before anything touches process.env.DATABASE_URL.
 config({ path: ".env.local" });
-
-import { db } from "../lib/db";
-import { products } from "../lib/db/schema";
 
 const CATALOG = [
   {
@@ -105,6 +103,12 @@ const CATALOG = [
 ] as const;
 
 async function seed() {
+  // Imported dynamically, not at the top of the file: a static import is
+  // hoisted above the dotenv call above, so lib/db would be evaluated before
+  // DATABASE_URL exists and would throw on a perfectly valid .env.local.
+  const { db } = await import("../lib/db");
+  const { products } = await import("../lib/db/schema");
+
   console.log(`Seeding ${CATALOG.length} products...`);
 
   for (const item of CATALOG) {
