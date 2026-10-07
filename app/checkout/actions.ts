@@ -1,21 +1,9 @@
 "use server";
 
-import { inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
-import {
-  buildOrderItems,
-  collapseCartLines,
-  computeSubtotalCents,
-  formatShippingAddress,
-  validateShipping,
-  type CheckoutLine,
-  type ShippingInput,
-} from "@/lib/checkout";
-import { db } from "@/lib/db";
-import { orderItems, orders, products } from "@/lib/db/schema";
-import { sendOrderConfirmation } from "@/lib/email";
-import { generateOrderNumber } from "@/lib/order-number";
+import type { CheckoutLine, ShippingInput } from "@/lib/checkout";
+import { createOrder } from "@/lib/server/orders";
 
 export type { CheckoutLine, ShippingInput } from "@/lib/checkout";
 
@@ -24,10 +12,13 @@ export type PlaceOrderResult =
   | { ok: false; error: string };
 
 /**
- * Writes an order, then emails the confirmation.
+ * The web checkout path.
  *
- * The thin shell: every pricing and validation rule lives in lib/checkout.ts
- * so it can be tested without a database.
+ * Now a thin wrapper: every pricing, validation and ownership rule lives in
+ * `createOrder` (lib/server/orders.ts), which `POST /api/orders` calls too.
+ * A server action is not reachable from a native client — it is an RPC
+ * protocol tied to a build-specific action id — so the API route exists
+ * alongside this rather than replacing it, and they must not drift.
  */
 export async function placeOrder(
   lines: CheckoutLine[],
@@ -43,71 +34,22 @@ export async function placeOrder(
     return { ok: false, error: "You need to be signed in to place an order." };
   }
 
-  const address = validateShipping(shipping);
-  if (!address.ok) return address;
-
-  const collapsed = collapseCartLines(lines);
-  if (!collapsed.ok) return collapsed;
-
-  // Re-read every price from the database. The browser's cart is a list of
-  // intentions, not a source of truth about money.
-  const rows = await db
-    .select({
-      id: products.id,
-      name: products.name,
-      priceCents: products.priceCents,
-    })
-    .from(products)
-    .where(inArray(products.id, [...collapsed.value.keys()]));
-
-  const built = buildOrderItems(rows, collapsed.value);
-  if (!built.ok) return built;
-
-  const items = built.value;
-  const subtotalCents = computeSubtotalCents(items);
-
-  const orderId = crypto.randomUUID();
-  const orderNumber = generateOrderNumber();
-
-  // db.batch() on the Neon HTTP driver runs these in a single transaction, so
-  // an order can never be persisted without its items. The id is generated
-  // here rather than by the database precisely so both inserts can be batched.
-  await db.batch([
-    db.insert(orders).values({
-      id: orderId,
-      orderNumber,
-      userId,
-      email,
-      status: "confirmed",
-      subtotalCents,
-      ...address.value,
-    }),
-    db.insert(orderItems).values(items.map((item) => ({ ...item, orderId }))),
-  ]);
-
-  // Email happens AFTER the write and outside it. A failing mail provider
-  // must not cost the customer their order.
-  const mail = await sendOrderConfirmation({
-    to: email,
-    recipientName: session.user?.name ?? null,
-    orderNumber,
-    items: items.map((item) => ({
-      name: item.nameSnapshot,
-      quantity: item.quantity,
-      unitPriceCents: item.unitPriceCents,
-    })),
-    subtotalCents,
-    shippingAddress: formatShippingAddress(shipping),
+  const result = await createOrder({
+    userId,
+    email,
+    name: session.user?.name ?? null,
+    lines,
+    shipping,
   });
 
-  if (!mail.ok) {
-    console.error(
-      `[order ${orderNumber}] confirmation email failed:`,
-      mail.error,
-    );
-  }
+  if (!result.ok) return { ok: false, error: result.error };
 
   revalidatePath("/orders");
 
-  return { ok: true, orderId, orderNumber, emailSent: mail.ok };
+  return {
+    ok: true,
+    orderId: result.orderId,
+    orderNumber: result.orderNumber,
+    emailSent: result.emailSent,
+  };
 }

@@ -6,7 +6,7 @@ import { useCart } from "@/components/cart-provider";
 import { formatCents } from "@/lib/money";
 
 export default function CartPage() {
-  const { lines, hydrated, subtotalCents, setQuantity, remove } = useCart();
+  const { lines, hydrated, subtotalCents, adjust, remove } = useCart();
 
   // A skeleton rather than a spinner: the layout does not jump when the real
   // rows arrive a frame later.
@@ -112,9 +112,7 @@ export default function CartPage() {
                 <div className="inline-flex items-center rounded-full border border-line">
                   <button
                     type="button"
-                    onClick={() =>
-                      setQuantity(line.productId, line.quantity - 1)
-                    }
+                    onClick={() => adjust(line.productId, -1)}
                     aria-label={`Decrease quantity of ${line.name}`}
                     className="px-3 py-1.5 text-ink-faint transition-colors duration-200 hover:text-ink"
                   >
@@ -125,9 +123,7 @@ export default function CartPage() {
                   </span>
                   <button
                     type="button"
-                    onClick={() =>
-                      setQuantity(line.productId, line.quantity + 1)
-                    }
+                    onClick={() => adjust(line.productId, 1)}
                     aria-label={`Increase quantity of ${line.name}`}
                     className="px-3 py-1.5 text-ink-faint transition-colors duration-200 hover:text-ink"
                   >

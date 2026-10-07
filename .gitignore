@@ -7,3 +7,12 @@ out
 *.log
 .drizzle
 *.tsbuildinfo
+
+# Expo / React Native app has its own install and build output
+mobile/node_modules
+mobile/.expo
+mobile/dist
+mobile/web-build
+
+# Local-only verification scripts (never committed)
+.scratch/
